@@ -4,7 +4,9 @@
 const Alexa = require("ask-sdk");
 const https = require("https");
 
-const invocationName = "public holidays";
+
+
+const invocationName = "UK bank holidays";
 
 // Session Attributes 
 //   Alexa will track attributes for you, by default only during the lifespan of your session.
@@ -102,16 +104,9 @@ const AMAZON_HelpIntent_Handler = {
     const responseBuilder = handlerInput.responseBuilder;
     let sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
 
-    let intents = getCustomIntents();
-    let sampleIntent = randomElement(intents);
-
-    let say = 'You asked for help. ';
-    let previousIntent = getPreviousIntent(sessionAttributes);
-
-    if (previousIntent && !handlerInput.requestEnvelope.session.new) {
-      say += 'Your last intent was ' + previousIntent + '. ';
-    }
-    say += 'I understand  ' + intents.length + ' intents, here something you can ask me, ' + getSampleUtterance(sampleIntent);
+    let say = '<s>You asked for help</s>';
+    say += "<s>I can help you find information about bank holidays in the UK</s><s>I can find holidays in England, Scotland and Northern Ireland</s>";
+    say += "<s>For example, ask me: When is the next holiday?</s><s>Or ask me: How many holidays in June</s>";
 
     return responseBuilder
       .speak(say)
@@ -198,7 +193,7 @@ const FindNextHolidayIntent_Handler = {
         }
         let speechOutput = `The next holiday ${speechCountry} is ${nextHoliday.title} its on ${nextHoliday.date}`;
 
-        resolve(handlerInput.responseBuilder.speak(speechOutput).getResponse());
+        resolve(handlerInput.responseBuilder.speak(speechOutput).reprompt(speechOutput).getResponse());
       });
     });
 
@@ -301,16 +296,16 @@ const CountHolidaysIntent_Handler = {
 
             countHolidays = countryData.events.filter(function (a) {
               var d = new Date(a.date).valueOf();
-              if (d >= firstDay && d <= lastDay) return a
+              if (d >= firstDay && d <= lastDay) return a;
             }).length;
 
-            let locale = "en-us"
+            let locale = "en-us";
             timePeriod = aDate.toLocaleString(locale, {
               month: "long"
             });
 
           } else {
-            var yearMatchRegex = /\d{4}$/
+            var yearMatchRegex = /\d{4}$/;
             var yearMatch = timePeriod.match(yearMatchRegex);
 
             let aDate = new Date(timePeriod);
@@ -323,7 +318,7 @@ const CountHolidaysIntent_Handler = {
 
             countHolidays = countryData.events.filter(function (a) {
               var d = new Date(a.date).valueOf();
-              if (d >= firstDay && d <= lastDay) return a
+              if (d >= firstDay && d <= lastDay) return a;
             }).length;
 
             timePeriod = aDate.getFullYear();
@@ -341,7 +336,7 @@ const CountHolidaysIntent_Handler = {
           ];
           speechOutput = randomElement(noHolidaySayings);
         }
-        resolve(handlerInput.responseBuilder.speak(speechOutput).getResponse());
+        resolve(handlerInput.responseBuilder.speak(speechOutput).reprompt(speechOutput).getResponse());
       });
     });
   },
@@ -356,23 +351,21 @@ const LaunchRequest_Handler = {
     const responseBuilder = handlerInput.responseBuilder;
 
 
-    let says = [
-      "Hey, how can I help",
-      "Hi, thanks for using " + invocationName,
-      "Hello, whats up?",
-      "Hi, need a break?"
-    ];
+    // let says = [
+    //   "Hey, how can I help", 
+    //   "Hi, thanks for using " + invocationName,
+    //   "Hello, whats up?"];
 
-    // let say = 'hello' + ' and welcome to ' + invocationName + ' ! Say help to hear some options.';
-    let say = randomElement(says);
+    let say = 'hello' + ' and welcome to ' + invocationName + ' ! Say help to hear some options.';
+    //let say = randomElement(says);
 
-    let skillTitle = capitalize(invocationName);
+    //let skillTitle = capitalize(invocationName);
 
     return responseBuilder
       .speak(say)
-      // .reprompt('try again, ' + say)
+      .reprompt('try again, ' + say)
       .withStandardCard('Welcome!',
-        'Hello!\nThis is a card for your skill, ' + skillTitle,
+        'U.K. Bank Holidays',
         welcomeCardImg.smallImageUrl, welcomeCardImg.largeImageUrl)
       .getResponse();
   },
@@ -747,7 +740,7 @@ exports.handler = skillBuilder
 const interactionModel = {
   "interactionModel": {
     "languageModel": {
-      "invocationName": "uk bank holidays",
+      "invocationName": "u. k. bank holidays",
       "intents": [{
           "name": "AMAZON.CancelIntent",
           "samples": []
