@@ -104,9 +104,9 @@ const AMAZON_HelpIntent_Handler = {
     const responseBuilder = handlerInput.responseBuilder;
     let sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
 
-    let say = '<s>You asked for help</s>';
+    let say = '';
     say += "<s>I can help you find information about bank holidays in the UK</s><s>I can find holidays in England, Scotland and Northern Ireland</s>";
-    say += "<s>For example, ask me: When is the next holiday?</s><s>Or ask me: How many holidays in June</s>";
+    say += "<s>For example, ask me: When is the next holiday?</s><s>Ask me: when is the next day off in Scotland</s><s>Or ask me: How many holidays in June</s>";
 
     return responseBuilder
       .speak(say)
@@ -193,7 +193,14 @@ const FindNextHolidayIntent_Handler = {
         }
         let speechOutput = `The next holiday ${speechCountry} is ${nextHoliday.title} its on ${nextHoliday.date}`;
 
-        resolve(handlerInput.responseBuilder.speak(speechOutput).reprompt(speechOutput).getResponse());
+        var options = {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        };
+        let textOutput = `${nextHoliday.title}\n${new Date(nextHoliday.date).toLocaleDateString("en-UK",options)}`;
+        resolve(handlerInput.responseBuilder.speak(speechOutput).withStandardCard('UK Bank Holidays', textOutput).getResponse());
       });
     });
 
@@ -325,8 +332,10 @@ const CountHolidaysIntent_Handler = {
           }
         }
         let speechOutput = '';
+        let textOutput = '';
         if (countHolidays > 0) {
           speechOutput = 'I found ' + countHolidays + ' holidays in ' + timePeriod;
+          textOutput = countHolidays + ' in ' + timePeriod;
         } else {
           let noHolidaySayings = [
             "I\'m sorry, I can\'t find any holidays in " + timePeriod,
@@ -335,8 +344,13 @@ const CountHolidaysIntent_Handler = {
             "Well this is unfortunate. <break strength=\"strong\"/>There are no holidays in " + timePeriod
           ];
           speechOutput = randomElement(noHolidaySayings);
+          textOutput = 'No holidays in ' + timePeriod;
         }
-        resolve(handlerInput.responseBuilder.speak(speechOutput).reprompt(speechOutput).getResponse());
+        resolve(
+          handlerInput.responseBuilder
+          .speak(speechOutput)
+          .withStandardCard('UK Bank Holidays', textOutput)
+          .getResponse());
       });
     });
   },
@@ -361,12 +375,16 @@ const LaunchRequest_Handler = {
 
     //let skillTitle = capitalize(invocationName);
 
+    let possibleQuesitons = [
+      "When is the next holiday in Scotland?",
+      "How many holidays in May?"
+    ]
+
     return responseBuilder
       .speak(say)
       .reprompt('try again, ' + say)
-      .withStandardCard('Welcome!',
-        'U.K. Bank Holidays',
-        welcomeCardImg.smallImageUrl, welcomeCardImg.largeImageUrl)
+      .withStandardCard('UK Bank Holidays',
+        'Try asking: ' + randomElement(possibleQuesitons))
       .getResponse();
   },
 };
